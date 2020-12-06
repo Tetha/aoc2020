@@ -4,6 +4,8 @@ use std::num::ParseIntError;
 mod day1;
 mod day2;
 mod day3;
+mod day4;
+mod day5;
 
 #[derive(Debug)]
 pub struct AdventError {
@@ -20,6 +22,9 @@ fn main() -> Result<(), AdventError> {
         "day2_part2" => day2::part2(),
         "day3_part1" => day3::part1(),
         "day3_part2" => day3::part2(),
+        "day4_part1" => day4::part1(),
+        "day5_part1" => day5::part1(),
+        "day5_part2" => day5::part2(),
         _ => {
             println!("Unknown argument {}", args[0]);
             Ok(())
