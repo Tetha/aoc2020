@@ -83,7 +83,7 @@ mod test {
 
     #[test]
     fn test_policy_parse() {
-        let input = "2 - 9 c";
+        let input = "2-9 c";
         let policy = input.parse::<PasswordPolicy>().unwrap();
         assert_eq!(policy, PasswordPolicy{min: 2, max: 9, letter: 'c'})
     }
