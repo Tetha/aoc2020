@@ -6,6 +6,7 @@ mod day2;
 mod day3;
 mod day4;
 mod day5;
+mod day6;
 
 #[derive(Debug)]
 pub struct AdventError {
@@ -25,6 +26,8 @@ fn main() -> Result<(), AdventError> {
         "day4_part1" => day4::part1(),
         "day5_part1" => day5::part1(),
         "day5_part2" => day5::part2(),
+        "day6_part1" => day6::part1(),
+        "day6_part2" => day6::part2(),
         _ => {
             println!("Unknown argument {}", args[0]);
             Ok(())
