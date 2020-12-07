@@ -12,15 +12,13 @@ pub fn part1() -> Result<(), AdventError> {
     let reverse_edges = reverse_edges(&bag_specs);
     println!("reachable");
     let reacheable_nodes = count_reachable_nodes("shiny gold", &reverse_edges);
-    println!("Could reach {} bags", reacheable_nodes);
+    println!("Could reach {} bags", reacheable_nodes - 1);
     Ok(())
 }
 
 pub fn part2() -> Result<(), AdventError> {
     let input = include_str!("input");
-    println!("lines");
     let bag_specs = parse_many_lines(input);
-    println!("reachable");
     let contained_bags = count_contained_bags("shiny gold", &bag_specs);
     println!("Contains {}", contained_bags - 1);
     Ok(())
