@@ -32,8 +32,10 @@ struct BagSpec {
 
 fn count_contained_bags(current: &str, bag_specs: &HashMap<String, BagSpec>) -> u32 {
     let current_spec = &bag_specs[current];
-    println!("Current: {:?}", current_spec);
-    current_spec.inner_bags.iter().map(|(color, num)| num * count_contained_bags(color, bag_specs)).sum::<u32>() + 1
+    current_spec.inner_bags
+                .iter()
+                .map(|(color, num)| num * count_contained_bags(color, bag_specs))
+                .sum::<u32>() + 1
 }
 
 fn count_reachable_nodes(start: &str, edges: &HashMap<String, Vec<String>>) -> usize {
