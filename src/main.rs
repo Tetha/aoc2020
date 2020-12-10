@@ -38,6 +38,8 @@ fn main() -> Result<(), AdventError> {
         "day8_part2" => day8::part2(),
         "day9_part1" => day9::part1(),
         "day9_part2" => day9::part2(),
+        "day10_part1" => day10::part1(),
+        "day10_part2" => day10::part2(),
         _ => {
             println!("Unknown argument {}", args[0]);
             Ok(())
