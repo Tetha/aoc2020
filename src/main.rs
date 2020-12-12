@@ -44,6 +44,7 @@ fn main() -> Result<(), AdventError> {
         "day10_part2" => day10::part2(),
         "day11_part1" => day11::part1(),
         "day11_test" => day11::test(),
+        "day11_part2" => day11::part2(),
         "day12_part1" => day12::part1(),
         "day12_part2" => day12::part2(),
         _ => {

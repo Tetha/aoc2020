@@ -124,7 +124,7 @@ impl ShipPosition {
                 self.y += self.waypoint_y * p;
             }
         }
-        println!("{:?}", self);
+        //println!("{:?}", self);
     }
     
     fn act(&mut self, action: Action) {

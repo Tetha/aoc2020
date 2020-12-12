@@ -10,7 +10,7 @@ pub fn test() -> Result<(), AdventError> {
     loop {
         println!("{}", state);
         println!("-----------");
-        let next_state = state.do_step();
+        let next_state = state.do_step(true);
         if next_state == state {
             break;
         } else {
@@ -26,7 +26,7 @@ pub fn part1() -> Result<(), AdventError> {
     let mut state = input.parse::<FerryState>()?;
 
     loop {
-        let next_state = state.do_step();
+        let next_state = state.do_step(false);
         if next_state == state {
             break;
         } else {
@@ -37,6 +37,21 @@ pub fn part1() -> Result<(), AdventError> {
     Ok(())
 }
 
+pub fn part2() -> Result<(), AdventError> {
+    let input = include_str!("input");
+    let mut state = input.parse::<FerryState>()?;
+
+    loop {
+        let next_state = state.do_step(true);
+        if next_state == state {
+            break;
+        } else {
+            state = next_state;
+        }
+    }
+    println!("{}", state.count_occupied_seats());
+    Ok(())
+}
 #[derive(Debug, Copy, Clone, PartialEq)]
 enum FerrySpot {
     Floor,
@@ -122,14 +137,71 @@ impl FerryState {
         return result;
     }
 
-    fn do_step(&self) -> FerryState {
+    fn get_visible_neighbours(&self, x: usize, y: usize) -> Vec<FerrySpot> {
+        let mut result = Vec::new();
+        self.get_first_seat_cell(x, y, -1, -1)
+            .map(|spot| result.push(spot));
+        self.get_first_seat_cell(x, y, -1, 0)
+            .map(|spot| result.push(spot));
+        self.get_first_seat_cell(x, y, -1, 1)
+            .map(|spot| result.push(spot));
+
+
+        self.get_first_seat_cell(x, y, 0, -1)
+            .map(|spot| result.push(spot));
+        self.get_first_seat_cell(x, y, 0, 1)
+            .map(|spot| result.push(spot));
+
+
+        self.get_first_seat_cell(x, y, 1, -1)
+            .map(|spot| result.push(spot));
+        self.get_first_seat_cell(x, y, 1, 0)
+            .map(|spot| result.push(spot));
+        self.get_first_seat_cell(x, y, 1, 1)
+            .map(|spot| result.push(spot));
+        
+        //println!("{}/{} has neighbours {:?}", x, y, result);
+        return result;
+    }
+    
+    fn get_first_seat_cell(&self, start_x: usize, start_y: usize, dx: i32, dy: i32) -> Option<FerrySpot> {
+        let mut current_x = start_x as i32;
+        let mut current_y = start_y as i32;
+
+        loop {
+            current_x += dx;
+            current_y += dy;
+
+            if !(0 <= current_x && (current_x as usize) < self.width) {
+                return None;
+            }
+
+            if !(0 <= current_y && (current_y as usize) < self.height) {
+                return None;
+            }
+
+            let cell = self.get_cell(current_x as usize, current_y as usize);
+
+            match cell {
+                FerrySpot::FullSeat | FerrySpot::EmptySeat => return Some(cell),
+                FerrySpot::Floor => continue
+            }
+        }
+    }
+
+    fn do_step(&self, is_part2: bool) -> FerryState {
         let mut next_state =FerryState::new(self.width, self.height);
         for x in 0..self.width {
             for y in 0..self.width {
                 match self.get_cell(x, y) {
                     FerrySpot::Floor => continue,
                     FerrySpot::EmptySeat => {
-                        if self.get_neighbours(x, y)
+                        let neighbours = if is_part2 {
+                            self.get_visible_neighbours(x, y)
+                        } else {
+                            self.get_neighbours(x, y)
+                        };
+                        if neighbours
                             .iter()
                             .filter(|n| n == &&FerrySpot::FullSeat)
                             .count() == 0 {
@@ -139,10 +211,16 @@ impl FerryState {
                         }
                     }
                     FerrySpot::FullSeat => {
-                        if self.get_neighbours(x, y)
+                        let neighbours = if is_part2 {
+                            self.get_visible_neighbours(x, y)
+                        } else {
+                            self.get_neighbours(x, y)
+                        };
+                        let limit = if is_part2 { 5 } else { 4 };
+                        if neighbours
                             .iter()
                             .filter(|n| n == &&FerrySpot::FullSeat)
-                            .count() >= 4 {
+                            .count() >= limit {
                             next_state.set_cell(x, y, FerrySpot::EmptySeat);
                         } else {
                             next_state.set_cell(x, y, FerrySpot::FullSeat);
