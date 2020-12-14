@@ -58,8 +58,8 @@ impl FromStr for PasswordPolicy {
     type Err = AdventError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let RE: Regex = Regex::new("(?P<min>[[:digit:]]+)-(?P<max>[[:digit:]]+) (?P<letter>[[:word:]])").unwrap();
-        RE.captures(s).and_then(|cap| {
+        let re: Regex = Regex::new("(?P<min>[[:digit:]]+)-(?P<max>[[:digit:]]+) (?P<letter>[[:word:]])").unwrap();
+        re.captures(s).and_then(|cap| {
             let min = cap.name("min");
             let max = cap.name("max");
             let letter = cap.name("letter");

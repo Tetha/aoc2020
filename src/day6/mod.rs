@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::{HashMap};
 
 use crate::AdventError;
 
@@ -54,7 +54,7 @@ fn get_answers_for_group<'a, T>(lines: &mut T) -> Group
         for c in line.trim().chars() {
             let current_count = result.get(&c);
             match current_count{
-                Some(previous_count) => result.insert(c, previous_count + 1),
+                Some(&previous_count) => result.insert(c, previous_count + 1),
                 None => result.insert(c, 1),
             };
         }

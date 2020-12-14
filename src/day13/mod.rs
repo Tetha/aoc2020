@@ -106,6 +106,6 @@ mod tests {
     
     #[test]
     fn debug_helper() {
-        part2();
+        part2().unwrap();
     }
 }

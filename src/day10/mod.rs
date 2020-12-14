@@ -26,7 +26,7 @@ fn find_possibilities(joltages: &Vec<u32>) -> u64 {
     joltages.sort();
 
     let mut possibilities_from_here: Vec<u64> = Vec::new();
-    for i in 0..joltages.len() {
+    for _ in 0..joltages.len() {
         possibilities_from_here.push(0);
     }
 
