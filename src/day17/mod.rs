@@ -19,20 +19,22 @@ fn parse_input(s: &str) -> DimensionState {
     for (y, l) in s.lines().enumerate() {
         for (x, c) in l.chars().enumerate() {
             if c == '#' {
-                result.activate_cube(x as i32, y as i32, 0);
+                result.activate_cube(x as i32, y as i32, 0, 0);
             }
         }
     }
     result
 }
 
-fn calculate_neighbours(x: i32, y: i32, z: i32) -> HashSet<(i32, i32, i32)> {
+fn calculate_neighbours(x: i32, y: i32, z: i32, w: i32) -> HashSet<(i32, i32, i32, i32)> {
     let mut result = HashSet::new();
     for dx in -1..=1 {
         for dy in -1..=1 {
             for dz in -1..=1 {
-                if !(dx == 0 && dy == 0 && dz == 0) {
-                    result.insert((x + dx, y + dy, z + dz));
+                for dw in -1..=1 {
+                    if !(dx == 0 && dy == 0 && dz == 0 && dw == 0) {
+                        result.insert((x + dx, y + dy, z + dz, w + dw));
+                    }
                 }
             }
         }
@@ -47,7 +49,7 @@ enum ConwayCube {
 
 #[derive(Debug)]
 struct DimensionState {
-    cells: DefaultHashMap<(i32, i32, i32), ConwayCube>,
+    cells: DefaultHashMap<(i32, i32, i32, i32), ConwayCube>,
 }
 
 impl DimensionState {
@@ -55,8 +57,8 @@ impl DimensionState {
         DimensionState{cells: DefaultHashMap::new(ConwayCube::Inactive)}
     }
 
-    fn activate_cube(&mut self, x: i32, y: i32, z: i32) {
-        self.cells.insert((x, y, z), ConwayCube::Active);
+    fn activate_cube(&mut self, x: i32, y: i32, z: i32, w: i32) {
+        self.cells.insert((x, y, z, w), ConwayCube::Active);
     }
 
     fn count_cubes(&self) -> usize {
@@ -64,19 +66,19 @@ impl DimensionState {
     }
 
     fn step(&self) -> DimensionState {
-        let mut possibly_active_cubes: HashSet<(i32, i32, i32)> = HashSet::new();
-        for &(x, y, z) in self.cells.keys() {
-            possibly_active_cubes.insert((x, y, z));
-            for neighbour in calculate_neighbours(x, y, z) {
+        let mut possibly_active_cubes: HashSet<(i32, i32, i32, i32)> = HashSet::new();
+        for &(x, y, z, w) in self.cells.keys() {
+            possibly_active_cubes.insert((x, y, z, w));
+            for neighbour in calculate_neighbours(x, y, z, w) {
                 possibly_active_cubes.insert(neighbour);
             }
         }
 
-        let mut next_cells: DefaultHashMap<(i32, i32, i32), ConwayCube> = DefaultHashMap::new(ConwayCube::Inactive);
-        for (x, y, z) in possibly_active_cubes {
-            match &self.cells[(x, y, z)] {
+        let mut next_cells: DefaultHashMap<(i32, i32, i32, i32), ConwayCube> = DefaultHashMap::new(ConwayCube::Inactive);
+        for (x, y, z, w) in possibly_active_cubes {
+            match &self.cells[(x, y, z, w)] {
                 ConwayCube::Active => {
-                    let active_neighbours = calculate_neighbours(x, y, z)
+                    let active_neighbours = calculate_neighbours(x, y, z, w)
                         .iter()
                         .map(|n| self.cells[n] )
                         .filter(|&s| s == ConwayCube::Active)
@@ -84,11 +86,11 @@ impl DimensionState {
                    
                     //println!("  active cube {:>3} {:>3} {:>3} has {} active neighbours", x, y, z, active_neighbours);
                     if active_neighbours == 2 || active_neighbours == 3 {
-                        next_cells.insert((x, y, z), ConwayCube::Active);
+                        next_cells.insert((x, y, z, w), ConwayCube::Active);
                     }
                 }
                 ConwayCube::Inactive => {
-                    let active_neighbours = calculate_neighbours(x, y, z)
+                    let active_neighbours = calculate_neighbours(x, y, z, w)
                         .iter()
                         .map(|n| self.cells[n] )
                         .filter(|&s| s == ConwayCube::Active)
@@ -96,7 +98,7 @@ impl DimensionState {
                     
                     //println!("inactive cube {:>3} {:>3} {:>3} has {} active neighbours", x, y, z, active_neighbours);
                     if active_neighbours == 3 {
-                        next_cells.insert((x, y, z), ConwayCube::Active);
+                        next_cells.insert((x, y, z, w), ConwayCube::Active);
                     }
                 }
             }
@@ -114,14 +116,21 @@ impl DimensionState {
         let min_z = self.cells.keys().map(|k| k.2 ).min().unwrap();
         let max_z = self.cells.keys().map(|k| k.2 ).max().unwrap();
 
-        for z in min_z..=max_z {
-            println!("z={}", z);
-            for y in min_y..=max_y {
-                for x in min_x..=max_x {
-                    match self.cells[(x, y, z)] {
-                        ConwayCube::Inactive => print!("."),
-                        ConwayCube::Active => print!("#"),
+        let min_w = self.cells.keys().map(|k| k.3 ).min().unwrap();
+        let max_w = self.cells.keys().map(|k| k.3 ).max().unwrap();
+
+        for w in min_w..=max_w {
+            println!("z={}", w);
+            for z in min_z..=max_z {
+                println!("z={}", z);
+                for y in min_y..=max_y {
+                    for x in min_x..=max_x {
+                        match self.cells[(x, y, z,  w)] {
+                            ConwayCube::Inactive => print!("."),
+                            ConwayCube::Active => print!("#"),
+                        }
                     }
+                    println!("")
                 }
                 println!("")
             }
