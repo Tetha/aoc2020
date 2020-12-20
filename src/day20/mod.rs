@@ -3,6 +3,35 @@ use std::str::FromStr;
 
 use crate::AdventError;
 
+pub fn part1() -> Result<(), AdventError> {
+    let input = include_str!("input");
+    let subject = input.parse::<TileBox>()?;
+    let possible_neighbours = build_possible_adjacency_matrix(&subject);
+
+    let possible_neighbours = build_possible_adjacency_matrix(&subject);
+    for tile in possible_neighbours.possibilities_below.keys() {
+        if possible_neighbours.possibilities_top[tile].len() == 0 
+            && possible_neighbours.possibilities_left[tile].len() == 0 {
+                println!("Top Left Corner candidate: {:?}/r {:?}/f {:?}", tile.id, tile.rotation, tile.flipped);
+        }
+
+        if possible_neighbours.possibilities_top[tile].len() == 0 
+            && possible_neighbours.possibilities_right[tile].len() == 0 {
+                println!("Top Right Corner candidate: {:?}/r {:?}/f {:?}", tile.id, tile.rotation, tile.flipped);
+        }
+
+        if possible_neighbours.possibilities_below[tile].len() == 0 
+            && possible_neighbours.possibilities_right[tile].len() == 0 {
+                println!("Bottom Right Corner candidate: {:?}/r {:?}/f {:?}", tile.id, tile.rotation, tile.flipped);
+        }
+
+        if possible_neighbours.possibilities_below[tile].len() == 0 
+            && possible_neighbours.possibilities_left[tile].len() == 0 {
+                println!("Bottom Left Corner candidate: {:?}/r {:?}/f {:?}", tile.id, tile.rotation, tile.flipped);
+        }
+    }
+    Ok(())
+}
 pub fn test() -> Result<(), AdventError> {
     let input = include_str!("example_input");
     let subject = input.parse::<TileBox>()?;
@@ -13,6 +42,7 @@ pub fn test() -> Result<(), AdventError> {
     println!("Tile {}: (flipped)", sample_tile.0);
     sample_tile.1.dump_to_stdout_flipped();
 
+    /*
     let subject = PlacedTile{
         id: *sample_tile.0,
         content: sample_tile.1,
@@ -26,7 +56,59 @@ pub fn test() -> Result<(), AdventError> {
     println!("Right: {:?}", format_pixel_vec(&subject.right_border()));
     println!("Bottom: {:?}", format_pixel_vec(&subject.bottom_border()));
     println!("Left: {:?}", format_pixel_vec(&subject.left_border()));
+    */
+
+    let possible_neighbours = build_possible_adjacency_matrix(&subject);
+
+    for tile in possible_neighbours.possibilities_below.keys() {
+        if possible_neighbours.possibilities_top[tile].len() == 0 
+            && possible_neighbours.possibilities_left[tile].len() == 0 {
+                println!("Top Left Corner candidate: {:?}/r {:?}/f {:?}", tile.id, tile.rotation, tile.flipped);
+        }
+
+        if possible_neighbours.possibilities_top[tile].len() == 0 
+            && possible_neighbours.possibilities_right[tile].len() == 0 {
+                println!("Top Right Corner candidate: {:?}/r {:?}/f {:?}", tile.id, tile.rotation, tile.flipped);
+        }
+
+        if possible_neighbours.possibilities_below[tile].len() == 0 
+            && possible_neighbours.possibilities_right[tile].len() == 0 {
+                println!("Bottom Right Corner candidate: {:?}/r {:?}/f {:?}", tile.id, tile.rotation, tile.flipped);
+        }
+
+        if possible_neighbours.possibilities_below[tile].len() == 0 
+            && possible_neighbours.possibilities_left[tile].len() == 0 {
+                println!("Bottom Left Corner candidate: {:?}/r {:?}/f {:?}", tile.id, tile.rotation, tile.flipped);
+        }
+    }
+    /*
+    println!("0 - {}", possible_neighbours.possibilities_right.values().filter(|v| v.len() == 0).count());
+    println!("1 - {}", possible_neighbours.possibilities_right.values().filter(|v| v.len() == 1).count());
+    println!("2 - {}", possible_neighbours.possibilities_right.values().filter(|v| v.len() == 2).count());
+    println!("3 - {}", possible_neighbours.possibilities_right.values().filter(|v| v.len() == 3).count());
+    println!("4 - {}", possible_neighbours.possibilities_right.values().filter(|v| v.len() == 4).count());
+    println!("5 - {}", possible_neighbours.possibilities_right.values().filter(|v| v.len() == 5).count());
+    println!("+ - {}", possible_neighbours.possibilities_right.values().filter(|v| v.len() > 5).count());
+    */
+
+    /*
+    for (top_piece, bottom_pieces) in 
+        possible_neighbours.iter() {
+        println!("Possible placements: On top {} {:?} {:?}, below {:?}", 
+            top_piece.id, top_piece.rotation, top_piece.flipped,
+            bottom_pieces.iter()
+                         .map(|p| format!("{} {:?} {:?},", p.id, p.rotation, p.flipped))
+                         .collect::<Vec<String>>()
+        );
+    }*/
     Ok(())
+}
+
+struct PlacementMatrixes<'a> {
+    possibilities_below: HashMap<PlacedTile<'a>, Vec<PlacedTile<'a>>>,
+    possibilities_right: HashMap<PlacedTile<'a>, Vec<PlacedTile<'a>>>,
+    possibilities_left: HashMap<PlacedTile<'a>, Vec<PlacedTile<'a>>>,
+    possibilities_top: HashMap<PlacedTile<'a>, Vec<PlacedTile<'a>>>,
 }
 
 fn format_pixel_vec(pixels: &Vec<Pixel>) -> String {
@@ -37,7 +119,7 @@ fn format_pixel_vec(pixels: &Vec<Pixel>) -> String {
           })
           .collect::<String>()
 }
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
 enum Pixel {
     Block,
     Water,
@@ -46,6 +128,115 @@ enum Pixel {
 #[derive(Debug)]
 struct TileBox {
     tiles: HashMap<usize, TileContent>,
+}
+
+fn build_possible_adjacency_matrix(tiles: &TileBox) -> PlacementMatrixes {
+
+    let mut possibilities_below: HashMap<PlacedTile, Vec<PlacedTile>> = HashMap::new();
+    let mut possibilities_right: HashMap<PlacedTile, Vec<PlacedTile>> = HashMap::new();
+    for tile_a_idx in tiles.tiles.keys() {
+        for first_tile_placement in tiles.get_all_placements(tile_a_idx) {
+            let mut possible_below: Vec<PlacedTile> = Vec::new();
+            let mut possible_right: Vec<PlacedTile> = Vec::new();
+            for second_tile_idx in tiles.tiles.keys() {
+                if second_tile_idx == tile_a_idx {
+                    continue;
+                }
+                for second_tile_placement in tiles.get_all_placements(second_tile_idx) {
+                    if second_tile_placement.can_be_placed_below_of(&first_tile_placement) {
+                        possible_below.push(second_tile_placement.clone());
+                    }
+                    if second_tile_placement.can_be_placed_right_of(&first_tile_placement) {
+                        possible_right.push(second_tile_placement);
+                    }
+                }
+            }
+            possibilities_below.insert(first_tile_placement.clone(), possible_below);
+            possibilities_right.insert(first_tile_placement, possible_right);
+        }
+    }
+    let mut result = PlacementMatrixes{
+        possibilities_below,
+        possibilities_right,
+        possibilities_left: HashMap::new(),
+        possibilities_top: HashMap::new(),
+    } ;
+    reverse_placement_matrixes(&mut result);
+    result
+}
+
+fn reverse_placement_matrixes(matrixes: &mut PlacementMatrixes) {
+    for key in matrixes.possibilities_below.keys() {
+        matrixes.possibilities_left.insert(key.clone(), Vec::new());
+        matrixes.possibilities_top.insert(key.clone(), Vec::new());
+    }
+
+    for (tile, right_possibilities) in matrixes.possibilities_right.iter() {
+        for rp in right_possibilities {
+            matrixes.possibilities_left.get_mut(&rp).unwrap().push(tile.clone());
+        }
+    }
+
+    for (tile, bottom_possibilities) in matrixes.possibilities_below.iter() {
+        for bp in bottom_possibilities {
+            matrixes.possibilities_top.get_mut(&bp).unwrap().push(tile.clone());
+        }
+    }
+}
+impl TileBox {
+    fn get_all_placements(&self, idx: &usize) -> Vec<PlacedTile> {
+        let content = &self.tiles[idx];
+        vec![
+            PlacedTile{
+                id: *idx,
+                flipped: Flipped::Normal,
+                rotation: Rotation::None,
+                content: content,
+            },
+            PlacedTile{
+                id: *idx,
+                flipped: Flipped::Normal,
+                rotation: Rotation::Once,
+                content: content,
+            },
+            PlacedTile{
+                id: *idx,
+                flipped: Flipped::Normal,
+                rotation: Rotation::Twice,
+                content: content,
+            },
+            PlacedTile{
+                id: *idx,
+                flipped: Flipped::Normal,
+                rotation: Rotation::Thrice,
+                content: content,
+            },
+            PlacedTile{
+                id: *idx,
+                flipped: Flipped::Horizontally,
+                rotation: Rotation::None,
+                content: content,
+            },
+            PlacedTile{
+                id: *idx,
+                flipped: Flipped::Horizontally,
+                rotation: Rotation::Once,
+                content: content,
+            },
+            PlacedTile{
+                id: *idx,
+                flipped: Flipped::Horizontally,
+                rotation: Rotation::Twice,
+                content: content,
+            },
+            PlacedTile{
+                id: *idx,
+                flipped: Flipped::Horizontally,
+                rotation: Rotation::Thrice,
+                content: content,
+            },
+        ]
+    }
 }
 
 impl FromStr for TileBox {
@@ -81,7 +272,7 @@ impl FromStr for TileBox {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, Hash)]
 struct TileContent {
     width: usize,
     height: usize,
@@ -183,7 +374,7 @@ impl TileContent {
 }
 
 // clockwise rotation
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone)]
 enum Rotation {
     None,
     Once,
@@ -191,10 +382,13 @@ enum Rotation {
     Thrice,
 }
 
+#[derive(Debug, PartialEq, Eq, Hash, Clone)]
 enum Flipped {
     Normal,
     Horizontally,
 }
+
+#[derive(Debug, PartialEq, Eq, Hash, Clone)]
 struct PlacedTile<'a> {
     id: usize,
     rotation: Rotation,
@@ -321,7 +515,7 @@ mod tests {
             id: 1234,
             flipped: Flipped::Normal,
             rotation: Rotation::None,
-            content,
+            content: &content,
         };
 
         subject.flipped = Flipped::Horizontally;
