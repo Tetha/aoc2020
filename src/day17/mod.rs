@@ -143,7 +143,7 @@ impl DimensionState {
 mod tests {
     use super::*;
 
-    #[test]
+    //#[test]
     fn test_example_one(){
         let input = ".#.
 ..#
