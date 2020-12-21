@@ -6,6 +6,8 @@ use regex::Regex;
 
 use crate::AdventError;
 
+mod space_golf;
+
 pub fn part1() -> Result<(), AdventError> {
     let input = include_str!("input");
     let memory = run_program(input, true)?;
@@ -14,6 +16,12 @@ pub fn part1() -> Result<(), AdventError> {
 }
 pub fn part2() -> Result<(), AdventError> {
     let input = include_str!("input");
+    let memory = run_program(input, false)?;
+    println!("Result: {}", memory.sum_values());
+    Ok(())
+}
+pub fn challenge() -> Result<(), AdventError> {
+    let input = include_str!("input.hard");
     let memory = run_program(input, false)?;
     println!("Result: {}", memory.sum_values());
     Ok(())
