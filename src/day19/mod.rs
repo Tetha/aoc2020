@@ -11,6 +11,11 @@ pub fn part1() -> Result<(), AdventError> {
     solve(input)
 }
 
+pub fn part2() -> Result<(), AdventError> {
+    let input = include_str!("input copy");
+    solve(input)
+}
+
 pub fn test() -> Result<(), AdventError> {
     let input = "0: 4 1 5
 1: 2 3 | 3 2
